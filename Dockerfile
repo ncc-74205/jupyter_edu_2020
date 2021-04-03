@@ -319,14 +319,14 @@ RUN chmod +x /usr/local/bin/start-notebook.sh
 ADD mysql-init /home/jovyan/
 RUN chmod +r /home/jovyan/mysql-init
 
-user $NB_UID
-
 # Install Tini
 RUN conda install --quiet --yes 'tini=0.18.0' && \
     conda list tini | grep tini | tr -s ' ' | cut -d ' ' -f 1,2 >> $CONDA_DIR/conda-meta/pinned && \
     conda clean -tipsy && \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER
+
+user $NB_UID
 
 # START
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

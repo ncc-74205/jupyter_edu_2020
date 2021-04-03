@@ -289,13 +289,16 @@ WORKDIR $HOME
 user root
 
 ADD my.cnf /etc/mysql/my.cnf
-RUN chown $NB_USER:$NB_UID /etc/mysql/my.cnf
-RUN mkdir -p /var/run/mysqld
-RUN mkdir -p /usr/local/mysql/var
-RUN chown -R $NB_USER:$NB_UID /var/lib/mysql
-RUN chown -R $NB_USER:$NB_UID /var/log/mysql
-RUN chown -R $NB_USER:$NB_UID /var/run/mysqld
-RUN chown -R $NB_USER:$NB_UID /usr/local/mysql
+
+#prevent too many layers to be created
+RUN chown $NB_USER:$NB_UID /etc/mysql/my.cnf && \
+mkdir -p /var/run/mysqld && \
+mkdir -p /usr/local/mysql/var && \
+chown -R $NB_USER:$NB_UID /var/lib/mysql && \
+chown -R $NB_USER:$NB_UID /var/log/mysql && \
+chown -R $NB_USER:$NB_UID /var/run/mysqld && \
+chown -R $NB_USER:$NB_UID /usr/local/mysql
+
 # required in order to make mysqld work in docker container
 VOLUME /usr/local/mysql/var
 
@@ -313,30 +316,28 @@ RUN conda install --quiet --yes 'tini=0.18.0' && \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER
 
-RUN mkdir -p /home/$NB_USER/.local/config/
 ADD mysql_config.json /home/$NB_USER/.local/config/mysql_config.json
-RUN chmod +r /home/$NB_USER/.local/config/mysql_config.json
 ADD imshow.m /usr/share/octave/5.2.0/m/image/
-RUN chmod +r /usr/share/octave/5.2.0/m/image/imshow.m
 ADD jupyter_notebook_config.py /etc/jupyter/
-RUN fix-permissions /etc/jupyter/
 ADD start.sh /usr/local/bin/
-RUN chmod +rx /usr/local/bin/start.sh
 ADD start-notebook.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/start-notebook.sh
+ADD mysql-init /home/jovyan/mysql/
+ADD start_mysql.sh /home/jovyan/mysql/
+ADD start_postgresql.sh /home/jovyan/postgresql/
 
-RUN mkdir -p /home/$NB_USER/mysql
-ADD mysql-init /home/jovyan/mysql
-RUN chmod +r /home/jovyan/mysql/mysql-init
-ADD start_mysql.sh /home/jovyan/mysql
-RUN chmod +rx /home/jovyan/mysql/start_mysql.sh
-
-RUN mkdir -p /home/$NB_USER/postgresql
-ADD start_postgresql.sh /home/jovyan/postgresql
-RUN chmod +rx /home/jovyan/postgresql/start_postgresql.sh
-
-COPY entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
+#prevent too many layers to be created
+RUN mkdir -p /home/$NB_USER/.local/config/ && \
+chmod +r /home/$NB_USER/.local/config/mysql_config.json && \
+chmod +r /usr/share/octave/5.2.0/m/image/imshow.m && \
+fix-permissions /etc/jupyter/ && \
+chmod +rx /usr/local/bin/start.sh && \
+chmod +x /usr/local/bin/start-notebook.sh && \
+mkdir -p /home/$NB_USER/mysql && \
+chmod +r /home/jovyan/mysql/mysql-init && \
+chmod +rx /home/jovyan/mysql/start_mysql.sh && \
+mkdir -p /home/$NB_USER/postgresql && \
+chmod +rx /home/jovyan/postgresql/start_postgresql.sh && \
+chown -R $NB_USER:$NB_UID /home/jovyan/postgresql
 
 user $NB_UID
 

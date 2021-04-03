@@ -305,6 +305,14 @@ RUN jupyter lab build
 # Add local files as late as possible to avoid cache busting
 
 USER root
+
+# Install Tini
+RUN conda install --quiet --yes 'tini=0.18.0' && \
+    conda list tini | grep tini | tr -s ' ' | cut -d ' ' -f 1,2 >> $CONDA_DIR/conda-meta/pinned && \
+    conda clean -tipsy && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
 RUN mkdir -p /home/$NB_USER/.local/config/
 ADD mysql_config.json /home/$NB_USER/.local/config/mysql_config.json
 RUN chmod +r /home/$NB_USER/.local/config/mysql_config.json
@@ -316,20 +324,23 @@ ADD start.sh /usr/local/bin/
 RUN chmod +rx /usr/local/bin/start.sh
 ADD start-notebook.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start-notebook.sh
-ADD mysql-init /home/jovyan/
-RUN chmod +r /home/jovyan/mysql-init
 
-# Install Tini
-RUN conda install --quiet --yes 'tini=0.18.0' && \
-    conda list tini | grep tini | tr -s ' ' | cut -d ' ' -f 1,2 >> $CONDA_DIR/conda-meta/pinned && \
-    conda clean -tipsy && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
+RUN mkdir -p /home/$NB_USER/mysql
+ADD mysql-init /home/jovyan/mysql
+RUN chmod +r /home/jovyan/mysql/mysql-init
+ADD start_mysql /home/jovyan/mysql
+RUN chmod +rx /home/jovyan/mysql/start_mysql
+
+RUN mkdir -p /home/$NB_USER/postgresql
+ADD start_postgresql /home/jovyan/postgresql
+RUN chmod +rx /home/jovyan/postgresql/start_postgresql
 
 COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 user $NB_UID
+
+RUN mkdir /home/$NB_USER/workspace
 
 # START
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

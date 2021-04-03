@@ -328,12 +328,12 @@ RUN chmod +x /usr/local/bin/start-notebook.sh
 RUN mkdir -p /home/$NB_USER/mysql
 ADD mysql-init /home/jovyan/mysql
 RUN chmod +r /home/jovyan/mysql/mysql-init
-ADD start_mysql /home/jovyan/mysql
-RUN chmod +rx /home/jovyan/mysql/start_mysql
+ADD start_mysql.sh /home/jovyan/mysql
+RUN chmod +rx /home/jovyan/mysql/start_mysql.sh
 
 RUN mkdir -p /home/$NB_USER/postgresql
-ADD start_postgresql /home/jovyan/postgresql
-RUN chmod +rx /home/jovyan/postgresql/start_postgresql
+ADD start_postgresql.sh /home/jovyan/postgresql
+RUN chmod +rx /home/jovyan/postgresql/start_postgresql.sh
 
 COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh

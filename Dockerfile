@@ -324,6 +324,8 @@ ADD start-notebook.sh /usr/local/bin/
 ADD mysql-init /home/jovyan/mysql/
 ADD start_mysql.sh /home/jovyan/mysql/
 ADD start_postgresql.sh /home/jovyan/postgresql/
+ADD start_postgresql.sh /home/jovyan/postgresql/
+ADD convert_to_html.sh /usr/local/bin/
 
 #prevent too many layers to be created
 RUN mkdir -p /home/$NB_USER/.local/config/ && \
@@ -337,13 +339,15 @@ chmod +r /home/jovyan/mysql/mysql-init && \
 chmod +rx /home/jovyan/mysql/start_mysql.sh && \
 mkdir -p /home/$NB_USER/postgresql && \
 chmod +rx /home/jovyan/postgresql/start_postgresql.sh && \
-chown -R $NB_USER:$NB_UID /home/jovyan/postgresql
+chown -R $NB_USER:$NB_UID /home/jovyan/postgresql && \
+chmod +rx /usr/local/bin/convert_to_html.sh
 
 COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 user $NB_UID
 
+RUN pip install nbtoolbelt
 RUN mkdir /home/$NB_USER/workspace
 
 # START

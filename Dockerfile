@@ -339,6 +339,9 @@ mkdir -p /home/$NB_USER/postgresql && \
 chmod +rx /home/jovyan/postgresql/start_postgresql.sh && \
 chown -R $NB_USER:$NB_UID /home/jovyan/postgresql
 
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 user $NB_UID
 
 RUN mkdir /home/$NB_USER/workspace
